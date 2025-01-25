@@ -6,7 +6,7 @@ import { authRoute } from "./route/auth";
 
 const app = new Hono<{ Bindings: CloudflareBindings }>();
 
-app.use("*", logger())
+app.use("*", logger());
 
 app.get("/", (c) => {
   return c.text("Hello Hono changed!");
@@ -22,6 +22,6 @@ app.get("/users", async (c) => {
   }
 });
 
-app.route("/auth", authRoute)
+app.route("/auth", authRoute);
 
 export default app;

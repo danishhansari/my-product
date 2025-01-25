@@ -1,8 +1,6 @@
 import { sql } from "drizzle-orm";
 import { text, integer, sqliteTable, index } from "drizzle-orm/sqlite-core";
 
-export const categoryEnum = ["General Store", "Medical Shop", "Garment"] as const;
-
 export const users = sqliteTable(
   "users",
   {
@@ -17,8 +15,7 @@ export const users = sqliteTable(
     isPremium: integer("is_premium", { mode: "boolean" }).default(false),
     purchase_time: integer("purchase_time", { mode: "timestamp" }),
     expires: integer("expires", { mode: "timestamp" }),
-    created: text("created")
-      .default(sql`(current_timestamp)`),
+    created: text("created").default(sql`(current_timestamp)`),
   },
   (table) => {
     return {

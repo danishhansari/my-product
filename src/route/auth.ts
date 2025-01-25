@@ -4,7 +4,6 @@ import { Hono } from "hono";
 
 const authRoute = new Hono<{ Bindings: CloudflareBindings }>();
 
+authRoute.post("/sign-in", async (c) => {});
 
-
-
-export {authRoute}
+export { authRoute };
