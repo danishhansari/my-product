@@ -5,13 +5,15 @@ import {
   loginValidation,
   signUpValidation,
 } from "../validation/authValidation";
-import { hashPassword, verifyPassword } from "../utils";
+import { getJWTAndOption, hashPassword, verifyPassword } from "../utils";
 import { eq } from "drizzle-orm";
+import { setCookie } from "hono/cookie";
 
 const authRoute = new Hono<{ Bindings: CloudflareBindings }>();
 
 authRoute
   .post("/sign-up", async (c) => {
+    console.log(c.env);
     const data = await c.req.json();
     let validate;
     try {
@@ -24,8 +26,18 @@ authRoute
     try {
       const db = drizzle(c.env.DB);
       validate.password = hashedPassword;
-      const response = await db.insert(users).values(validate).returning();
-      return c.json(response[0], 200);
+      const [response] = await db.insert(users).values(validate).returning();
+
+      if (!response) {
+        return c.json({ error: "Error while saving into database" }, 500);
+      }
+
+      const { jwt, options } = await getJWTAndOption(
+        { id: response.id, phone: response.phone },
+        c.env.SECRET
+      );
+      setCookie(c, "Authorization", jwt, { ...options });
+      return c.json({ response, jwt, options }, 200);
     } catch (error) {
       console.log(error);
       return c.json({ error }, 500);
@@ -67,8 +79,13 @@ authRoute
       if (!verifiedPassword) {
         return c.json({ message: "Incorrect password" }, 403);
       }
+      const { jwt, options } = await getJWTAndOption(
+        { id: existingUser.id, phone: existingUser.phone },
+        c.env.SECRET
+      );
+      setCookie(c, "Authorization", jwt, { ...options });
 
-      return c.json({ safeUser, verifiedPassword, password });
+      return c.json({ safeUser, verifiedPassword, password, jwt, options });
     } catch (error) {
       console.error("Database error:", error);
       return c.json({ message: "Authentication failed" }, 500);

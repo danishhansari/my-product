@@ -1,3 +1,29 @@
+import { sign, verify } from "hono/jwt";
+import { CookieOptions } from "hono/utils/cookie";
+import { JWTPayload } from "hono/utils/jwt/types";
+
+interface JwtSecret {
+  jwt: string;
+  options: CookieOptions;
+}
+
+const thirtyDaysFromNow = (): Date =>
+  new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
+export const getJWTAndOption = async (
+  payload: JWTPayload,
+  secret: string
+): Promise<JwtSecret> => {
+  const jwt = await sign(payload, secret);
+  const options: CookieOptions = {
+    sameSite: "Strict",
+    httpOnly: true,
+    secure: true,
+    expires: thirtyDaysFromNow(),
+  };
+  return { jwt, options };
+};
+
 export const hashPassword = async (
   password: string,
   providedSalt?: Uint8Array
