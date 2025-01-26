@@ -1,4 +1,4 @@
-name = "my-product-backend"
+name = "my-product"
 main = "src/index.ts"
 compatibility_date = "2025-01-14"
 
